@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可愛聊天室</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            background-color: #ffe4e1;
+            padding: 20px;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .chat-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 2px solid #ff69b4;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #fff5f5;
+            border-radius: 16px;
+        }
+        .message {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #ff69b4;
+        }
+        .message-text {
+            background-color: #ffb6c1;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 75%;
+        }
+        .input-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-container input[type="text"] {
+            padding: 10px;
+            border: 2px solid #ff69b4;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .input-container input[type="file"] {
+            margin-bottom: 10px;
+        }
+        .input-container button {
+            padding: 10px;
+            border: none;
+            background-color: #ff69b4;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .input-container button:hover {
+            background-color: #ff1493;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <h2>可愛聊天室</h2>
+        <div>
+            <label for="nickname">暱稱：</label>
+            <input type="text" id="nickname" placeholder="輸入你的暱稱">
+        </div>
+        <div>
+            <label for="avatar">頭像：</label>
+            <input type="file" id="avatar" accept="image/*">
+        </div>
+    </div>
+
+    <div class="messages" id="messages">
+        <!-- 訊息會顯示在這裡 -->
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="輸入訊息...">
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="sendMessage()">發送</button>
+    </div>
+</div>
+
+<script>
+    let userAvatar = '';
+
+    // 加載聊天紀錄
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedMessages = localStorage.getItem('chatMessages');
+        if (savedMessages) {
+            document.getElementById('messages').innerHTML = savedMessages;
+        }
+    });
+
+    // 保存聊天紀錄
+    function saveChatHistory() {
+        const messagesContainer = document.getElementById('messages').innerHTML;
+        localStorage.setItem('chatMessages', messagesContainer);
+    }
+
+    document.getElementById('avatar').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            userAvatar = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    function sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const imageInput = document.getElementById('imageInput');
+        const nickname = document.getElementById('nickname').value || '匿名';
+        const message = messageInput.value.trim();
+        const imageFile = imageInput.files[0];
+        
+        const messagesContainer = document.getElementById('messages');
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message';
+
+        const avatarImg = document.createElement('img');
+        avatarImg.className = 'avatar';
+        avatarImg.src = userAvatar || 'https://via.placeholder.com/40'; // 預設頭像
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'message-text';
+
+        if (message) {
+            textDiv.innerText = `${nickname}: ${message}`;
+        } else if (imageFile) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '200px';
+                textDiv.appendChild(img);
+            };
+            reader.readAsDataURL(imageFile);
+        } else {
+            return; // 如果沒有訊息或圖片，則不執行
+        }
+
+        messageDiv.appendChild(avatarImg);
+        messageDiv.appendChild(textDiv);
+
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight; // 自動滾動到最新訊息
+
+        messageInput.value = ''; // 清空訊息輸入框
+        imageInput.value = '';   // 清空圖片輸入框
+
+        saveChatHistory(); // 每次發送訊息後保存聊天紀錄
+    }
+</script>
+
+</body>
+</html>
